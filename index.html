@@ -97,7 +97,7 @@ h3{font-size:16px;margin:0;font-weight:600}
 .sum{display:grid;grid-template-columns:1.25fr 1fr;gap:0;margin-bottom:14px;overflow:hidden}
 .sum > div{padding:18px 20px}
 .sum .acts{background:var(--surface2);border-left:1px solid var(--line)}
-.sum .head{font-size:17px;line-height:1.5;font-weight:500;margin:4px 0 12px;max-width:62ch}
+.sum .head{font-size:17px;line-height:1.5;font-weight:500;margin:4px 0 12px;max-width:min(62ch,calc(100% - 120px))}
 .var{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:4px 10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
 .var i{margin-top:3px}
 .var .why{grid-column:2/3;color:var(--muted);font-size:13px}
@@ -201,6 +201,21 @@ tr.sel td{background:var(--accent-soft)}
 .acc-r:first-child{border-top:0;position:sticky;top:0;background:var(--surface);z-index:1;font-size:12px;color:var(--faint);padding-top:8px}
 .acc-r .in{padding:5px 7px;font-size:13.5px}
 .badge-live{font-size:12px;color:color-mix(in srgb,var(--sun) 60%,var(--ink));font-weight:600}
+/* v7 */
+.phead{position:relative;overflow:hidden;border-radius:var(--r-card);padding:16px 20px 40px;margin:10px 0 16px;background:linear-gradient(135deg,var(--accent-soft),var(--surface) 80%);border:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.phead > :not(svg){position:relative;z-index:1}
+.phead .pw{position:absolute;left:0;bottom:0;width:100%;height:48px;z-index:0}
+.phead h2{margin:0}
+.tx{cursor:pointer}
+.hwrap{position:relative}
+.hax{position:absolute;left:0;top:0;bottom:0;width:46px;pointer-events:none;z-index:2;background:linear-gradient(90deg,var(--surface) 72%,transparent)}
+.hax svg{width:46px;height:100%;display:block}
+.hscroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+.hscroll::-webkit-scrollbar{display:none}
+.hscroll .chart svg{width:100%}
+.hind{position:relative;height:4px;border-radius:2px;background:var(--bg2);margin-top:10px;overflow:hidden}
+.hind > div{position:absolute;top:0;bottom:0;border-radius:2px;background:var(--accent);opacity:.7}
+@media (max-width:720px){main{padding-top:14px}.phead{margin-top:6px;padding:14px 16px 36px}.hh-v{font-size:clamp(26px,8.5vw,36px)}}
 /* v6 */
 main{padding-bottom:calc(190px + env(safe-area-inset-bottom))}
 .sech{display:flex;align-items:center;gap:10px;margin:22px 0 12px;font-weight:600;color:var(--muted);font-size:13px}
@@ -233,7 +248,9 @@ main{padding-bottom:calc(190px + env(safe-area-inset-bottom))}
   .arow .gname .t{font-size:13px}
 }
 /* v5 */
-.home{display:grid;gap:12px}
+.home{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.home > *{min-width:0}
+.tx,.dtr,table,tr,td{touch-action:pan-x pan-y}
 .hh{padding:18px 18px 16px;background:linear-gradient(135deg,var(--accent-soft),var(--surface) 75%)}
 .hh-v{font-size:44px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin:4px 0 6px}
 .hh-r{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -604,14 +621,15 @@ $('#fsBtn').onclick=()=>fsClick();
 function chart(id,cfg){afterFns.push(()=>drawChart(id,cfg))}
 function drawChart(id,cfg){{
     const el=document.getElementById(id);if(!el)return;
-    const W=Math.max(300,Math.round(el.clientWidth||760)),H=cfg.h||250,pl=52,pr=18,pt=12,pb=28,n=cfg.labels.length;
+    const W=cfg.w?Math.round(cfg.w):Math.max(300,Math.round(el.clientWidth||760)),H=cfg.h||250,pl=cfg.pl??52,pr=cfg.pr??18,pt=12,pb=28,n=cfg.labels.length;
     const all=cfg.series.flatMap(s=>s.vals).filter(v=>isFinite(v));
     let mx=Math.max(0,...all),mn=Math.min(0,...all);
     if(cfg.series.every(s=>s.type==='area')){mn=Math.min(...all)*0.92;mx=Math.max(...all)*1.04}
     const step=niceStep((mx-mn)/4);mx=Math.ceil(mx/step)*step;mn=Math.floor(mn/step)*step;if(mx===mn)mx=mn+1;
     const y=v=>pt+(H-pt-pb)*(1-(v-mn)/(mx-mn)), bw=(W-pl-pr)/n, x=i=>pl+bw*i+bw/2;
     let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
-    for(let v=mn;v<=mx+1e-6;v+=step){s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" ${Math.abs(v)<1e-9?'stroke-width="1.5"':''}/><text x="${pl-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--faint)">${kfmt(v)}</text>`}
+    for(let v=mn;v<=mx+1e-6;v+=step){s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" ${Math.abs(v)<1e-9?'stroke-width="1.5"':''}/>${cfg.noAxis?'':`<text x="${pl-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--faint)">${kfmt(v)}</text>`}`}
+    if(cfg.onScale){const t=[];for(let v=mn;v<=mx+1e-6;v+=step)t.push([v,y(v)]);cfg.onScale(t,H)}
     const bars=cfg.series.filter(q=>q.type==='bar'),gb=Math.min(bw*0.72,46),each=gb/Math.max(1,bars.length);
     const every=Math.max(1,Math.ceil(40/bw));
     cfg.labels.forEach((l,i)=>{
@@ -629,10 +647,10 @@ function drawChart(id,cfg){{
     s+='</svg><div class="tip"></div>';
     el.innerHTML=s;
     const tip=el.querySelector('.tip'),svg=el.querySelector('svg');
-    svg.addEventListener('pointermove',e=>{const r=e.target.closest('rect[data-i]');if(!r){tip.style.opacity=0;return}const i=+r.dataset.i,b=svg.getBoundingClientRect(),sc=b.width/W;
+    svg.addEventListener('mousemove',e=>{const r=e.target.closest('rect[data-i]');if(!r){tip.style.opacity=0;return}const i=+r.dataset.i,b=svg.getBoundingClientRect(),sc=b.width/W;
       tip.innerHTML=`<b>${mLong(cfg.labels[i])}</b><br>`+cfg.series.map(q=>`${q.name}: ${e0(q.vals[i])}`).join('<br>');
       tip.style.left=Math.min(Math.max(x(i)*sc,70),b.width-70)+'px';tip.style.top=(pt*sc+8)+'px';tip.style.opacity=1});
-    svg.addEventListener('pointerleave',()=>tip.style.opacity=0);
+    svg.addEventListener('mouseleave',()=>tip.style.opacity=0);
     svg.addEventListener('click',e=>{const r=e.target.closest('rect[data-i]');if(r&&cfg.onPick)cfg.onPick(cfg.labels[+r.dataset.i])});
   }
 }
@@ -690,6 +708,7 @@ function vSummary(m){
   </div></div>`;
 }
 
+function phead(title,sub,right){return `<div class="phead"><div><h2>${title}</h2><div class="sub">${sub}</div></div>${right||''}<svg class="pw" viewBox="0 0 600 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0,34 C110,10 210,52 330,30 C440,10 520,26 600,18 V60 H0 Z" style="fill:var(--w2)" opacity=".75"/><path d="M0,46 C130,26 250,62 380,44 C480,30 545,42 600,36 V60 H0 Z" style="fill:var(--w1)" opacity=".85"/><path d="M0,54 C160,44 300,64 440,52 C520,46 570,52 600,50 V60 H0 Z" style="fill:var(--w3)" opacity=".7"/></svg></div>`}
 /* ---------- Onboarding (public build, no data yet on this device) ---------- */
 function vOnboard(){afterFns.push(()=>{bindGhForm($('#main'));const rt=$('#obRetry');if(rt)rt.onclick=async()=>{await ghSync(false);render();if(DB.empty)toast('Ancora nessun dato nel repository')};const rs=$('#obReset');if(rs)rs.onclick=()=>{GH.cfg=null;ghSaveCfg();setGH('off');render()};const f=$('#obImp');if(f)f.onchange=e=>{const x=e.target.files[0];if(!x)return;x.text().then(t=>{const d=JSON.parse(t);if(!Array.isArray(d.txns))throw 0;DB=d;migrate();persist();compute();render();toast(`Importati ${d.txns.length} movimenti`)}).catch(()=>toast('File non valido'))}});
   return `<div class="card onb"><div class="lbl"><i class="ph-fill ph-piggy-bank"></i>My Personal Finance</div><h2 style="margin-top:8px">Collega i tuoi dati</h2>
@@ -704,11 +723,10 @@ function vHome(){
   const m=UI.sel,T=M.tot(m),I=insights(m),B=M.bal[m]||{total:0},PB=M.bal[addM(m,-1)],avgSav=avgPrev(m,6,p=>M.tot(p).sav),c=cashCost(m);
   const all=DB.txns.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)),lim=UI.hLim||8,recent=all.slice(0,lim);
   const N=M.months.length;if(UI.hEnd==null||UI.hEnd>=N||UI.hEndFor!==m){UI.hEnd=M.months.indexOf(m);UI.hEndFor=m}
-  afterFns.push(()=>{drawHome();const sl=$('#hSl');if(sl)sl.oninput=e=>{UI.hEnd=+e.target.value;drawHome()};
-    const el=$('#cHome');if(el){let x0=null;el.addEventListener('pointerdown',e=>{x0=e.clientX});el.addEventListener('pointerup',e=>{if(x0==null)return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)>30){UI.hEnd=Math.max(Math.min(5,N-1),Math.min(N-1,UI.hEnd+(dx<0?1:-1)*Math.max(1,Math.round(Math.abs(dx)/50))));const s2=$('#hSl');if(s2)s2.value=UI.hEnd;drawHome()}});el.addEventListener('pointercancel',()=>{x0=null})}
+  afterFns.push(()=>{drawHome();
     const mo=$('#hMore');if(mo)mo.onclick=()=>{UI.hLim=(UI.hLim||8)+20;render()}});
   const vs=[...I.unfav,...I.fav].slice(0,4);
-  return `<div class="home">
+  return `${phead('Home',mShort(m)+(m===CUR?' · mese in corso':''))}<div class="home">
   <div class="card hh"><div class="lbl"><i class="ph ph-piggy-bank"></i>Risparmio · ${mShort(m)}${m===CUR?' · mese in corso':''}</div>
     <div class="hh-v num ${T.sav<0?'down':''}">${e0(T.sav)}</div>
     <div class="hh-r"><span class="pill num ${rc(T.rate)}">${pct(T.rate)}</span>${isFinite(avgSav)?`<span class="sub">vs Media 6M <b class="${T.sav-avgSav<0?'down':'up'}">${d0(T.sav-avgSav)}</b></span>`:''}</div>
@@ -718,14 +736,21 @@ function vHome(){
     <div class="card kpi"><div class="lab"><i class="ph ph-arrow-up-right" style="color:var(--cost)"></i>Costi</div><div class="val num">${e0(-T.opx)}</div><div class="delta">Di cui cash ${e0(c)}</div></div></div>
   <div class="card pad"><div class="lbl"><i class="ph ph-sparkle"></i>Sintesi</div><p class="hs">${I.head}</p>${vs.map(e=>`<div class="hv"><span>${esc(I.nm(e))}</span><b class="num ${e.d<0?'down':'up'}">${d0(e.d)}</b></div>`).join('')}</div>
   ${I.acts.length?`<details class="card hd"><summary><span class="lbl"><i class="ph ph-list-checks"></i>Azioni suggerite</span><span class="chip">${I.acts.length}</span></summary>${I.acts.map(([ic,t,d])=>`<div class="act"><span class="ic"><i class="ph ${ic}"></i></span><b>${t}</b><span>${d}</span></div>`).join('')}</details>`:''}
-  <div class="card pad"><div class="chead" style="margin-bottom:6px"><h3>6 mesi</h3><div class="legend"><span><i class="sw" style="background:var(--inc)"></i>Entrate</span><span><i class="sw" style="background:var(--cost)"></i>Costi</span><span><i class="sw ln" style="background:var(--line-s)"></i>Risparmio</span></div></div><div class="chart swipe" id="cHome"></div>
-    <input type="range" class="hsl" id="hSl" min="${Math.min(5,N-1)}" max="${N-1}" value="${UI.hEnd}" aria-label="Scorri i mesi"><div class="hslr"><span>${mShort(M.months[0])}</span><span id="hRange"></span><span>${mShort(M.months[N-1])}</span></div></div>
+  <div class="card pad"><div class="chead" style="margin-bottom:6px"><h3>6 mesi</h3><div class="legend"><span><i class="sw" style="background:var(--inc)"></i>Entrate</span><span><i class="sw" style="background:var(--cost)"></i>Costi</span><span><i class="sw ln" style="background:var(--line-s)"></i>Risparmio</span></div></div><div class="hwrap"><div class="hax" id="hAx"></div><div class="hscroll" id="hScroll"><div class="chart" id="cHome"></div></div></div><div class="hind" aria-hidden="true"><div id="hThumb"></div></div><div class="hslr"><span>${mShort(M.months[0])}</span><span id="hRange"></span><span>${mShort(M.months[N-1])}</span></div></div>
   <button class="card hl" data-tab="cash"><span><span class="lbl"><i class="ph ph-vault"></i>Liquidità totale</span><span class="hl-v num">${e0(B.total)}</span></span><span class="sub">${PB?`<span class="${B.total-PB.total<0?'down':'up'}">${d0(B.total-PB.total)}</span> nel mese `:''}<i class="ph ph-caret-right"></i></span></button>
   <div class="card" style="overflow:hidden"><div class="chead" style="margin:0;padding:14px 16px 6px"><h3>Ultimi movimenti</h3><button class="btn ghost sm" data-tab="tx">Tutti</button></div>${recent.map(t=>txRow(t)).join('')}${all.length>lim?`<div style="text-align:center;padding:12px"><button class="btn ghost sm" id="hMore">Mostra altri</button></div>`:''}</div>
   </div>`;
 }
-function drawHome(){const N=M.months.length,end=Math.max(0,Math.min(N-1,UI.hEnd)),win=M.months.slice(Math.max(0,end-5),end+1);const r=$('#hRange');if(r)r.textContent=`${mShort(win[0])} - ${mShort(win[win.length-1])}`;
-  drawChart('cHome',{labels:win,sel:UI.sel,h:170,onPick:p=>{UI.sel=p;UI.hEndFor=p;saveUI();render()},series:[{type:'bar',name:'Entrate',color:'var(--inc)',vals:win.map(p=>M.tot(p).inc)},{type:'bar',name:'Costi',color:'var(--cost)',vals:win.map(p=>-M.tot(p).opx)},{type:'line',name:'Risparmio',color:'var(--line-s)',vals:win.map(p=>M.tot(p).sav)}]})}
+function drawHome(){
+  const sc=$('#hScroll'),el=$('#cHome');if(!sc||!el)return;const N=M.months.length,vis=Math.min(6,N),PL=46,colW=(sc.clientWidth-PL)/vis,W=PL+colW*N;
+  el.style.width=W+'px';
+  drawChart('cHome',{labels:M.months,sel:UI.sel,h:180,w:W,pl:PL,pr:0,noAxis:true,onPick:p=>{UI.sel=p;UI.hEndFor=p;saveUI();render()},
+    onScale:(t,H)=>{$('#hAx').innerHTML=`<svg viewBox="0 0 46 ${H}" preserveAspectRatio="none">${t.map(([v,yy])=>`<text x="40" y="${yy+4}" text-anchor="end" font-size="11" fill="var(--faint)">${kfmt(v)}</text>`).join('')}</svg>`},
+    series:[{type:'bar',name:'Entrate',color:'var(--inc)',vals:M.months.map(p=>M.tot(p).inc)},{type:'bar',name:'Costi',color:'var(--cost)',vals:M.months.map(p=>-M.tot(p).opx)},{type:'line',name:'Risparmio',color:'var(--line-s)',vals:M.months.map(p=>M.tot(p).sav)}]});
+  const end=Math.max(0,Math.min(N-1,UI.hEnd));sc.scrollLeft=Math.max(0,PL+(end+1)*colW-sc.clientWidth);
+  const upd=()=>{const sw=sc.scrollWidth,cw=sc.clientWidth,th=$('#hThumb');if(th){th.style.width=(cw/sw*100)+'%';th.style.left=(sc.scrollLeft/sw*100)+'%'}
+    const first=Math.max(0,Math.round(sc.scrollLeft/colW)),last=Math.min(N-1,first+vis-1);UI.hEnd=last;const r=$('#hRange');if(r)r.textContent=`${mShort(M.months[first])} - ${mShort(M.months[last])}`};
+  sc.onscroll=()=>requestAnimationFrame(upd);upd()}
 
 /* ---------- Competenza ---------- */
 /* accrual costs of month m that were also paid in month m (no spread, no accrual). Rent paid at the end of the previous month counts as cash too. */
@@ -742,7 +767,7 @@ function vComp(){
   const f=M.flow[m]||{in:0,out:0,spread:0},cashSav=f.in+f.out;
   const rateAvg=avgPrev(m,6,p=>{const t=M.tot(p);return isFinite(t.rate)?t.rate:0});
   return `
-  <div class="chead"><div><h2>Competenza</h2><div class="sub">${mLong(m)}${live}</div></div></div>
+  ${phead('Competenza',mLong(m)+live)}
   ${vSummary(m)}
   <div class="kpis">
     <div class="card kpi hero"><div class="lab"><i class="ph ph-piggy-bank"></i>Risparmio</div><div class="val num ${T.sav<0?'down':''}">${e0(T.sav)}</div>${dl(T.sav,av('sav'))}</div>
@@ -887,7 +912,7 @@ function vCash(){
   const banks=M.banks.filter(b=>Math.abs(B[b]||0)>.5||M.last[b]);
   const rows=M.months.filter(x=>x<=m).slice().reverse().slice(0,24);
   return `
-  <div class="chead"><div><h2>Cassa</h2><div class="sub">Saldi a fine ${mShort(m)}${m===CUR?' <span class="badge-live">mese in corso</span>':''}</div></div></div>
+  ${phead('Cassa',`Saldi a fine ${mShort(m)}${m===CUR?' <span class="badge-live">mese in corso</span>':''}`)}
   <div class="sech">Riepilogo</div>
   <div class="kpis">
     <div class="card kpi hero"><div class="lab"><i class="ph ph-vault"></i>Liquidità totale</div><div class="val num">${e0(B.total)}</div>${PB?`<div class="delta"><span class="${B.total-PB.total>=0?'up':'down'}">${d0(B.total-PB.total)}</span> nel mese</div>`:''}</div>
@@ -916,7 +941,7 @@ function txRow(t,v,note){
   const a=M.A.get(t.gl),amt=v??t.amt,c=gc(t.gl);
   const flags=`${t.spread?`<span class="chip sp" title="Spalmato su ${t.spread.months} mesi">${mShort(t.spread.start)} - ${mShort(addM(t.spread.start,t.spread.months-1))}</span>`:''}${t.cashless?'<span class="chip">no cassa</span>':''}${!t.spread&&t.sp!==t.date.slice(0,7)?`<span class="chip">Comp. ${mShort(t.sp)}</span>`:''}${note?`<span class="chip">${esc(note)}</span>`:''}`;
   const cat=`<span class="chip cat" style="--c:${c}" title="${esc(a?a.group:'')}">${esc(a?a.name:t.gl)}</span>`;
-  return `<button class="tx" data-edit="${t.id}"><span class="dt num">${dShort(t.date)}</span><span class="d"><span>${esc(t.desc)}</span>${flags}</span><span class="cc">${cat}</span><span class="bk">${bankB(t.bank)}</span><span class="a num ${amt>0?'up':''}">${e2(amt)}</span><span class="mm">${cat}${bankB(t.bank)}<span>${dShort(t.date)}</span></span></button>`;
+  return `<div role="button" tabindex="0" class="tx" data-edit="${t.id}"><span class="dt num">${dShort(t.date)}</span><span class="d"><span>${esc(t.desc)}</span>${flags}</span><span class="cc">${cat}</span><span class="bk">${bankB(t.bank)}</span><span class="a num ${amt>0?'up':''}">${e2(amt)}</span><span class="mm">${cat}${bankB(t.bank)}<span>${dShort(t.date)}</span></span></div>`;
 }
 function filtered(){
   const q=UI.q.trim().toLowerCase();
@@ -936,7 +961,7 @@ function vTx(){
     const more=$('#more');if(more)more.onclick=()=>{UI.limit+=400;render()};
   });
   const sum=list.reduce((s,t)=>s+(t.cashless?0:t.amt),0);
-  return `<div class="chead"><div><h2>Movimenti</h2><div class="sub">${NF0.format(list.length)} movimenti · Saldo filtro ${e2(sum)}</div></div><button class="btn primary" data-new><i class="ph-bold ph-plus"></i>Aggiungi</button></div>
+  return `${phead('Movimenti',`${NF0.format(list.length)} movimenti · Saldo filtro ${e2(sum)}`,'<button class="btn primary" data-new><i class="ph-bold ph-plus"></i>Aggiungi</button>')}
   <div class="toolbar">
     <div class="search"><i class="ph ph-magnifying-glass"></i><input id="q" class="in" placeholder="Cerca descrizione, account, importo" value="${esc(UI.q)}" aria-label="Cerca"></div>
     <select id="fm" class="in" aria-label="Mese"><option value="">Tutti i mesi</option>${M.months.slice().reverse().map(m=>`<option value="${m}" ${UI.fMonth===m?'selected':''}>${mLong(m)}</option>`).join('')}</select>
