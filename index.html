@@ -91,7 +91,7 @@ h3{font-size:16px;margin:0;font-weight:600}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .sw{width:10px;height:10px;border-radius:2px;display:inline-block}
 .sw.ln{height:3px;border-radius:2px;width:14px}
-.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;padding:8px 10px;border-radius:6px;white-space:nowrap;opacity:0;transform:translate(-50%,-110%);transition:opacity .12s;z-index:5}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;padding:8px 10px;border-radius:6px;white-space:nowrap;opacity:0;transform:translate(-50%,0);transition:opacity .12s;z-index:5}
 .chead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 /* summary */
 .sum{display:grid;grid-template-columns:1.25fr 1fr;gap:0;margin-bottom:14px;overflow:hidden}
@@ -100,7 +100,7 @@ h3{font-size:16px;margin:0;font-weight:600}
 .sum .head{font-size:17px;line-height:1.5;font-weight:500;margin:4px 0 12px;max-width:62ch}
 .var{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:4px 10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
 .var i{margin-top:3px}
-.var .why{grid-column:2/-1;color:var(--muted);font-size:13px}
+.var .why{grid-column:2/3;color:var(--muted);font-size:13px}
 .act{display:grid;grid-template-columns:28px minmax(0,1fr);gap:2px 10px;padding:9px 0}
 .act + .act{border-top:1px solid var(--line)}
 .act .ic{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);grid-row:span 2}
@@ -201,6 +201,37 @@ tr.sel td{background:var(--accent-soft)}
 .acc-r:first-child{border-top:0;position:sticky;top:0;background:var(--surface);z-index:1;font-size:12px;color:var(--faint);padding-top:8px}
 .acc-r .in{padding:5px 7px;font-size:13.5px}
 .badge-live{font-size:12px;color:color-mix(in srgb,var(--sun) 60%,var(--ink));font-weight:600}
+/* v6 */
+main{padding-bottom:calc(190px + env(safe-area-inset-bottom))}
+.sech{display:flex;align-items:center;gap:10px;margin:22px 0 12px;font-weight:600;color:var(--muted);font-size:13px}
+.sech::after{content:'';flex:1;height:1px;background:var(--line)}
+.accts{display:grid;grid-template-columns:380px minmax(0,1fr);gap:14px;align-items:start}
+.pie{display:flex;gap:16px;align-items:center}
+.pie svg{width:120px;height:120px;flex:none}
+.pie ul{flex:1}
+.pie ul{list-style:none;margin:0;padding:0;font-size:13px;display:grid;gap:5px;min-width:0}
+.pie li{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.pie li span:first-child{display:flex;gap:6px;align-items:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bank{background-color:var(--surface)}
+.bank .qoq{font-size:12.5px;color:var(--muted)}
+.hsl{width:100%;margin:8px 0 0;accent-color:var(--accent)}
+.hslr{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:2px}
+.chart.swipe{touch-action:pan-y}
+.tokwarn{display:flex;gap:10px;align-items:flex-start;padding:12px 16px;margin-bottom:14px;border-color:color-mix(in srgb,var(--neg) 45%,var(--line));background:color-mix(in srgb,var(--neg) 8%,var(--surface))}
+.tokwarn i{color:var(--neg);font-size:20px;margin-top:1px}
+@media (max-width:720px){
+  .in,select.in,.cfsel{font-size:16px}
+  main{overflow-x:clip}
+  .kpi .val{font-size:clamp(18px,6.2vw,23px)}.kpi.hero .val{font-size:clamp(22px,7.5vw,29px)}
+  .hh-v{font-size:clamp(30px,11vw,44px)}
+  .h2c{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .kpi{padding:14px 14px;min-width:0}
+  .accts{grid-template-columns:1fr}
+  .tscroll{overflow-x:visible}
+  .gname .t{font-size:13.5px;overflow-x:auto;text-overflow:clip;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .gname .t::-webkit-scrollbar{display:none}
+  .arow .gname .t{font-size:13px}
+}
 /* v5 */
 .home{display:grid;gap:12px}
 .hh{padding:18px 18px 16px;background:linear-gradient(135deg,var(--accent-soft),var(--surface) 75%)}
@@ -394,6 +425,7 @@ const BANK_DEF={};
 function migrate(){
   if(DB.target==null)DB.target=0.2;
   if(!DB.noAct)DB.noAct=['Health'];
+  if(DB.tokenExp==null)DB.tokenExp='2027-10-09';
   if(!DB.noRenew)DB.noRenew=DB.txns.filter(t=>t.spread&&/lamette|rasoio/i.test(t.desc)).map(t=>t.id);
   if(!DB.mig2){const a=DB.accounts.find(a=>a.n===2160);if(a&&a.group!=='Transportation'){a.group='Transportation';a.macro='Shopping'}DB.mig2=1}
   DB.bankInfo=DB.bankInfo||{};
@@ -555,7 +587,7 @@ function renderShell(){
   const t=document.documentElement.dataset.theme;
   $('#themeSeg').innerHTML=`<button data-th="light" class="${t==='light'?'on':''}" aria-label="Modalità giorno"><i class="ph-fill ph-sun"></i><span>Giorno</span></button><button data-th="dark" class="${t==='dark'?'on':''}" aria-label="Modalità notte"><i class="ph-fill ph-moon-stars"></i><span>Notte</span></button>`;
 }
-function render(){if(UI.tab==='home'&&!isMob())UI.tab='comp';renderShell();const empty=DB.empty&&!DB.txns.length;$('#fab').style.display=empty?'none':'';const v=empty?vOnboard():UI.tab==='home'?vHome():UI.tab==='comp'?vComp():UI.tab==='cash'?vCash():vTx();$('#main').innerHTML=`<div class="view">${v}</div>`;afterRender()}
+function render(){if(UI.tab==='home'&&!isMob())UI.tab='comp';renderShell();const empty=DB.empty&&!DB.txns.length;$('#fab').style.display=empty?'none':'';const v=empty?vOnboard():UI.tab==='home'?vHome():UI.tab==='comp'?vComp():UI.tab==='cash'?vCash():vTx();$('#main').innerHTML=`<div class="view">${empty?'':tokBanner()}${v}</div>`;afterRender()}
 let afterFns=[];function afterRender(){afterFns.forEach(f=>f());afterFns=[]}
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-tab]');if(t){UI.tab=t.dataset.tab;saveUI();render();scrollTo({top:0})}
@@ -670,9 +702,11 @@ function vOnboard(){afterFns.push(()=>{bindGhForm($('#main'));const rt=$('#obRet
 /* ---------- Home (iPhone): summary first ---------- */
 function vHome(){
   const m=UI.sel,T=M.tot(m),I=insights(m),B=M.bal[m]||{total:0},PB=M.bal[addM(m,-1)],avgSav=avgPrev(m,6,p=>M.tot(p).sav),c=cashCost(m);
-  const recent=DB.txns.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,6);
-  const win=M.months.filter(x=>x<=m).slice(-6);
-  chart('cHome',{labels:win,sel:m,h:170,onPick:p=>{UI.sel=p;saveUI();render()},series:[{type:'bar',name:'Entrate',color:'var(--inc)',vals:win.map(p=>M.tot(p).inc)},{type:'bar',name:'Costi',color:'var(--cost)',vals:win.map(p=>-M.tot(p).opx)},{type:'line',name:'Risparmio',color:'var(--line-s)',vals:win.map(p=>M.tot(p).sav)}]});
+  const all=DB.txns.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)),lim=UI.hLim||8,recent=all.slice(0,lim);
+  const N=M.months.length;if(UI.hEnd==null||UI.hEnd>=N||UI.hEndFor!==m){UI.hEnd=M.months.indexOf(m);UI.hEndFor=m}
+  afterFns.push(()=>{drawHome();const sl=$('#hSl');if(sl)sl.oninput=e=>{UI.hEnd=+e.target.value;drawHome()};
+    const el=$('#cHome');if(el){let x0=null;el.addEventListener('pointerdown',e=>{x0=e.clientX});el.addEventListener('pointerup',e=>{if(x0==null)return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)>30){UI.hEnd=Math.max(Math.min(5,N-1),Math.min(N-1,UI.hEnd+(dx<0?1:-1)*Math.max(1,Math.round(Math.abs(dx)/50))));const s2=$('#hSl');if(s2)s2.value=UI.hEnd;drawHome()}});el.addEventListener('pointercancel',()=>{x0=null})}
+    const mo=$('#hMore');if(mo)mo.onclick=()=>{UI.hLim=(UI.hLim||8)+20;render()}});
   const vs=[...I.unfav,...I.fav].slice(0,4);
   return `<div class="home">
   <div class="card hh"><div class="lbl"><i class="ph ph-piggy-bank"></i>Risparmio · ${mShort(m)}${m===CUR?' · mese in corso':''}</div>
@@ -684,15 +718,18 @@ function vHome(){
     <div class="card kpi"><div class="lab"><i class="ph ph-arrow-up-right" style="color:var(--cost)"></i>Costi</div><div class="val num">${e0(-T.opx)}</div><div class="delta">Di cui cash ${e0(c)}</div></div></div>
   <div class="card pad"><div class="lbl"><i class="ph ph-sparkle"></i>Sintesi</div><p class="hs">${I.head}</p>${vs.map(e=>`<div class="hv"><span>${esc(I.nm(e))}</span><b class="num ${e.d<0?'down':'up'}">${d0(e.d)}</b></div>`).join('')}</div>
   ${I.acts.length?`<details class="card hd"><summary><span class="lbl"><i class="ph ph-list-checks"></i>Azioni suggerite</span><span class="chip">${I.acts.length}</span></summary>${I.acts.map(([ic,t,d])=>`<div class="act"><span class="ic"><i class="ph ${ic}"></i></span><b>${t}</b><span>${d}</span></div>`).join('')}</details>`:''}
-  <div class="card pad"><div class="chead" style="margin-bottom:6px"><h3>Ultimi 6 mesi</h3><div class="legend"><span><i class="sw" style="background:var(--inc)"></i>Entrate</span><span><i class="sw" style="background:var(--cost)"></i>Costi</span></div></div><div class="chart" id="cHome"></div></div>
+  <div class="card pad"><div class="chead" style="margin-bottom:6px"><h3>6 mesi</h3><div class="legend"><span><i class="sw" style="background:var(--inc)"></i>Entrate</span><span><i class="sw" style="background:var(--cost)"></i>Costi</span><span><i class="sw ln" style="background:var(--line-s)"></i>Risparmio</span></div></div><div class="chart swipe" id="cHome"></div>
+    <input type="range" class="hsl" id="hSl" min="${Math.min(5,N-1)}" max="${N-1}" value="${UI.hEnd}" aria-label="Scorri i mesi"><div class="hslr"><span>${mShort(M.months[0])}</span><span id="hRange"></span><span>${mShort(M.months[N-1])}</span></div></div>
   <button class="card hl" data-tab="cash"><span><span class="lbl"><i class="ph ph-vault"></i>Liquidità totale</span><span class="hl-v num">${e0(B.total)}</span></span><span class="sub">${PB?`<span class="${B.total-PB.total<0?'down':'up'}">${d0(B.total-PB.total)}</span> nel mese `:''}<i class="ph ph-caret-right"></i></span></button>
-  <div class="card" style="overflow:hidden"><div class="chead" style="margin:0;padding:14px 16px 6px"><h3>Ultimi movimenti</h3><button class="btn ghost sm" data-tab="tx">Tutti</button></div>${recent.map(t=>txRow(t)).join('')}</div>
+  <div class="card" style="overflow:hidden"><div class="chead" style="margin:0;padding:14px 16px 6px"><h3>Ultimi movimenti</h3><button class="btn ghost sm" data-tab="tx">Tutti</button></div>${recent.map(t=>txRow(t)).join('')}${all.length>lim?`<div style="text-align:center;padding:12px"><button class="btn ghost sm" id="hMore">Mostra altri</button></div>`:''}</div>
   </div>`;
 }
+function drawHome(){const N=M.months.length,end=Math.max(0,Math.min(N-1,UI.hEnd)),win=M.months.slice(Math.max(0,end-5),end+1);const r=$('#hRange');if(r)r.textContent=`${mShort(win[0])} - ${mShort(win[win.length-1])}`;
+  drawChart('cHome',{labels:win,sel:UI.sel,h:170,onPick:p=>{UI.sel=p;UI.hEndFor=p;saveUI();render()},series:[{type:'bar',name:'Entrate',color:'var(--inc)',vals:win.map(p=>M.tot(p).inc)},{type:'bar',name:'Costi',color:'var(--cost)',vals:win.map(p=>-M.tot(p).opx)},{type:'line',name:'Risparmio',color:'var(--line-s)',vals:win.map(p=>M.tot(p).sav)}]})}
 
 /* ---------- Competenza ---------- */
-/* accrual costs of month m that were also paid in month m (no spread, no accrual) */
-function cashCost(m){let c=0;for(const t of DB.txns){const a=M.A.get(t.gl);if(!a||a.type!=='OpEx'||t.spread||t.cashless)continue;if(t.sp===m&&t.date.slice(0,7)===m)c-=t.amt}return c}
+/* accrual costs of month m that were also paid in month m (no spread, no accrual). Rent paid at the end of the previous month counts as cash too. */
+function cashCost(m){let c=0;for(const t of DB.txns){const a=M.A.get(t.gl);if(!a||a.type!=='OpEx'||t.spread||t.cashless)continue;const dm=t.date.slice(0,7);if(t.sp===m&&(dm===m||(t.gl===RENT&&dm===addM(m,-1))))c-=t.amt}return c}
 const rc=r=>!isFinite(r)?'':r<0?'down':r<DB.target?'warn':'up';
 function vComp(){
   const m=UI.sel,T=M.tot(m),av=k=>avgPrev(m,6,p=>M.tot(p)[k]);
@@ -764,10 +801,10 @@ function breakdown(m){
       if(type!=='Income'&&macros.length>1)h+=`<div class="macro">${esc(mc)}</div>`;
       for(const g of list){
         const k=m+'|'+g.group+'|'+type,open=!!UI.open[k],d=sign*(g.cur-g.avg),good=d<0===(type!=='Income');
-        h+=`<button class="grow bd-cols ${open?'open':''}" data-grp="${esc(k)}" style="--c:${M.gcol.get(g.group)}"><span class="gname"><i class="ph-bold ph-caret-right car"></i><span class="swd"></span><span class="t" style="flex:1">${esc(g.group)}</span><span class="xr" data-cf="g:${esc(type+'|'+g.group)}" title="Vedi andamento mensile"><i class="ph ph-chart-bar"></i></span></span><span class="row-v num">${e0(sign*g.cur)}</span><span class="row-v num sub">${e0(sign*g.avg)}</span><span class="row-v num ${Math.abs(d)<1?'sub':good?'up':'down'}">${d0(d)}</span></button>`;
+        h+=`<div role="button" tabindex="0" class="grow bd-cols ${open?'open':''}" data-grp="${esc(k)}" style="--c:${M.gcol.get(g.group)}"><span class="gname"><i class="ph-bold ph-caret-right car"></i><span class="swd"></span><span class="t" style="flex:1">${esc(g.group)}</span><span class="xr" data-cf="g:${esc(type+'|'+g.group)}" title="Vedi andamento mensile"><i class="ph ph-chart-bar"></i></span></span><span class="row-v num">${e0(sign*g.cur)}</span><span class="row-v num sub">${e0(sign*g.avg)}</span><span class="row-v num ${Math.abs(d)<1?'sub':good?'up':'down'}">${d0(d)}</span></div>`;
         if(open)for(const [gl,x] of Object.entries(g.acc).sort((a,b)=>Math.abs(b[1].cur)-Math.abs(a[1].cur))){
           if(Math.abs(x.cur)<.005&&Math.abs(x.avg)<.5)continue;
-          h+=`<button class="arow bd-cols" data-acct="${gl}"><span class="gname"><span class="anum num">${gl}</span><span class="t">${esc(M.A.get(+gl).name)}</span>${Math.abs(x.spr)>.005?`<span class="chip sp">spalmato</span>`:''}</span><span class="row-v num">${e0(sign*x.cur)}</span><span class="row-v num">${e0(sign*x.avg)}</span><span></span></button>`;
+          h+=`<div role="button" tabindex="0" class="arow bd-cols" data-acct="${gl}"><span class="gname"><span class="anum num">${gl}</span><span class="t">${esc(M.A.get(+gl).name)}</span>${Math.abs(x.spr)>.005?`<span class="chip sp">spalmato</span>`:''}</span><span class="row-v num">${e0(sign*x.cur)}</span><span class="row-v num">${e0(sign*x.avg)}</span><span></span></div>`;
         }
       }
     }
@@ -786,6 +823,15 @@ function spreadItems(m){
     if(k<n)out.push({t,k,n,rem:-t.amt*(n-k)/n,mo:-t.amt/n})}
   return out.sort((a,b)=>b.rem-a.rem);
 }
+function tokBanner(){if(!DB.tokenExp)return '';const d=Math.ceil((new Date(DB.tokenExp+'T23:59:59')-new Date())/864e5);if(d>7)return '';
+  const dd=DB.tokenExp.split('-').reverse().join('/');
+  return `<div class="card tokwarn"><i class="ph-fill ph-warning"></i><div><b>${d<0?'Il token GitHub è scaduto':`Il token GitHub scade tra ${d} ${d===1?'giorno':'giorni'} (${dd})`}</b><div class="sub" style="font-size:13px">Rigeneralo su <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>, poi aggiorna la data in ⚙️ e incolla il nuovo token su PC e iPhone (⚙️ → Sincronizzazione GitHub).</div></div></div>`}
+function pieHTML(items,total){
+  const pos=items.filter(x=>x.v>0.5),T=pos.reduce((s,x)=>s+x.v,0)||1;let a=-Math.PI/2,paths='';
+  const R=60,C=66;for(const x of pos){const f=x.v/T,a2=a+f*2*Math.PI;
+    if(f>0.9999)paths+=`<circle cx="${C}" cy="${C}" r="${R}" fill="${x.color}"/>`;
+    else{const large=f>0.5?1:0,x1=C+R*Math.cos(a),y1=C+R*Math.sin(a),x2=C+R*Math.cos(a2),y2=C+R*Math.sin(a2);paths+=`<path d="M${C},${C} L${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${x.color}" stroke="var(--surface)" stroke-width="1.5"><title>${esc(x.label)} ${pct(f)}</title></path>`}a=a2}
+  return `<div class="pie"><svg viewBox="0 0 132 132" role="img" aria-label="Ripartizione liquidità per conto">${paths}</svg><ul>${pos.sort((p,q)=>q.v-p.v).map(x=>`<li><span><i class="sw" style="background:${x.color}"></i>${esc(x.label)}</span><b class="num">${pct(x.v/T)}</b></li>`).join('')}</ul></div>`}
 /* bridge from accrual savings to cash savings: comp + lines = cash */
 function bridge(m){let past=0,adv=0,shift=0,acc=0;
   for(const t of DB.txns){const a=M.A.get(t.gl);if(!a||!PNL(a.type))continue;const dm=t.date.slice(0,7);
@@ -842,14 +888,18 @@ function vCash(){
   const rows=M.months.filter(x=>x<=m).slice().reverse().slice(0,24);
   return `
   <div class="chead"><div><h2>Cassa</h2><div class="sub">Saldi a fine ${mShort(m)}${m===CUR?' <span class="badge-live">mese in corso</span>':''}</div></div></div>
+  <div class="sech">Riepilogo</div>
   <div class="kpis">
     <div class="card kpi hero"><div class="lab"><i class="ph ph-vault"></i>Liquidità totale</div><div class="val num">${e0(B.total)}</div>${PB?`<div class="delta"><span class="${B.total-PB.total>=0?'up':'down'}">${d0(B.total-PB.total)}</span> nel mese</div>`:''}</div>
     <div class="card kpi"><div class="lab"><i class="ph ph-arrow-down-left" style="color:var(--inc)"></i>Entrate</div><div class="val num">${e0(f.in)}</div><div class="delta">Giroconti esclusi</div></div>
     <div class="card kpi"><div class="lab"><i class="ph ph-arrow-up-right" style="color:var(--cost)"></i>Uscite</div><div class="val num">${e0(-f.out)}</div><div class="delta">${f.spread?`Di cui pagamenti anticipati ${e0(-f.spread)}`:'Nessun pagamento anticipato'}</div></div>
     <div class="card kpi"><div class="lab"><i class="ph ph-calendar-check"></i>Da inizio anno</div><div class="val num ${YB&&B.total-YB.total<0?'down':''}">${YB?d0(B.total-YB.total):'-'}</div>${YB?`<div class="delta">${pct((B.total-YB.total)/Math.abs(YB.total))} vs ${mShort(ye)}</div>`:''}</div>
   </div>
-  <div class="banks" style="margin-bottom:14px">${banks.map(b=>{const l=M.last[b];const days=l?Math.floor((ref-new Date(l))/864e5):null;
-    return `<div class="card bank"><div class="nm">${bankB(b)}${isClosed(b)?' <span class="chip">chiuso</span>':''}<span class="chip">${pct((B[b]||0)/B.total)}</span></div><div class="bal num">${e2(B[b]||0)}</div><div class="meta ${m===CUR&&days>14?'stale':''}">${l?`Ultimo movimento ${dShort(l)}${m===CUR?` · ${days} gg fa`:''}`:'Nessun movimento'}</div></div>`}).join('')}</div>
+  <div class="sech">Conti</div>
+  <div class="accts"><div class="card pad"><h3 style="margin-bottom:12px">Ripartizione</h3>${pieHTML(banks.map(b=>({label:b,v:B[b]||0,color:bInfo(b).bg})),B.total)}</div>
+  <div class="banks">${banks.map(b=>{const i=bInfo(b),qb=M.bal[addM(m,-3)],q0=qb?(qb[b]||0):null,dq=q0==null?null:(B[b]||0)-q0;
+    return `<div class="card bank" style="background-image:linear-gradient(135deg,color-mix(in srgb,${i.bg} 30%,transparent),color-mix(in srgb,${i.bg} 6%,transparent))"><div class="nm">${bankB(b)}${isClosed(b)?' <span class="chip">chiuso</span>':''}<span class="chip">${pct((B[b]||0)/B.total)}</span></div><div class="bal num">${e2(B[b]||0)}</div><div class="qoq">${dq==null?'QoQ -':(Math.abs(dq)<0.5?'QoQ invariato':`QoQ <b class="num ${dq<0?'down':'up'}">${d0(dq)}</b>${Math.abs(q0)>1?` <span class="num ${dq<0?'down':'up'}">· ${pct(dq/Math.abs(q0))}</span>`:''}`)}</div></div>`}).join('')}</div></div>
+  <div class="sech">Andamento</div>
   <div class="two">
     <div class="grid">
       <div class="card pad"><div class="chead"><h3>Liquidità a fine mese</h3></div><div class="chart" id="cCash"></div></div>
@@ -1031,6 +1081,7 @@ function openSettings(){
      <div class="set-row"><div class="field" style="flex:1"><label>Nuovo conto</label><input class="in" id="bN" placeholder="es. Fineco"></div><button class="btn primary sm" id="bAdd">Aggiungi</button></div></div>
    <div class="set-sec"><h3>Azioni suggerite</h3><div class="sub">Gruppi esclusi dalle azioni perché non discrezionali (evidenziati).</div>
      <div class="set-row">${[...new Set(DB.accounts.filter(a=>a.type==='OpEx').map(a=>a.group))].map(g=>`<button class="btn sm ${(DB.noAct||[]).includes(g)?'primary':'ghost'}" data-noact="${esc(g)}">${esc(g)}</button>`).join('')}</div></div>
+   <div class="set-sec"><h3>Scadenza token GitHub</h3><div class="sub">Ti avviso nell'app 7 giorni prima della scadenza.</div><div class="set-row"><div class="field" style="width:190px"><label>Scade il</label><input class="in" type="date" id="tokExp" value="${esc(DB.tokenExp||'')}"></div></div></div>
    <div class="set-sec"><h3>Sincronizzazione GitHub</h3>${GH.cfg?`<div class="sub">Collegato a <b>${esc(GH.cfg.owner)}/${esc(GH.cfg.repo)}</b>${GH.last?' · ultima sincronizzazione '+GH.last.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}):''}${GH.state==='error'?` · <span class="down">${esc(GH.err)}</span>`:''}</div><div class="set-row"><button class="btn primary sm" id="ghNow"><i class="ph ph-arrows-clockwise"></i>Sincronizza ora</button><button class="btn danger sm" id="ghOff">Scollega questo dispositivo</button></div>`:`<div class="sub">Collega un repository GitHub privato per avere gli stessi dati su PC e iPhone.</div>${ghForm()}`}</div>
    <div class="set-sec"><h3>Dati</h3><div class="sub">${FS.state==='ok'?`Salvataggio automatico attivo su <b>${esc(FS.handle.name)}</b>.`:'Salvataggio automatico su file non attivo: i dati sono solo in questo browser.'}</div>
      <div class="set-row"><button class="btn ${FS.state==='ok'?'ghost':'primary'} sm" id="fsSet"><i class="ph ph-floppy-disk"></i>${FS.state==='ok'?'Cambia file dati':'Collega file dati'}</button></div>
@@ -1064,7 +1115,7 @@ function openSettings(){
   s.querySelector('#exJ').onclick=()=>download(`bilancio-backup-${todayStr()}.json`,JSON.stringify(DB),'application/json');
   s.querySelector('#exC').onclick=exportCSV;
   s.querySelector('#imJ').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(x=>{const d=JSON.parse(x);if(!Array.isArray(d.txns)||!Array.isArray(d.accounts))throw 0;const old=DB;DB=d;migrate();modalOnClose=null;closeModal();commit();toast(`Importati ${d.txns.length} movimenti`,()=>{DB=old;commit()})}).catch(()=>toast('File non valido'))};
-  bindGhForm(s);const gn=s.querySelector('#ghNow');if(gn)gn.onclick=async()=>{await ghSync(false);openSettings()};
+  bindGhForm(s);s.querySelector('#tokExp').onchange=e=>{DB.tokenExp=e.target.value;persist();toast('Scadenza token salvata')};const gn=s.querySelector('#ghNow');if(gn)gn.onclick=async()=>{await ghSync(false);openSettings()};
   const go=s.querySelector('#ghOff');if(go)go.onclick=()=>{GH.cfg=null;ghSaveCfg();setGH('off');openSettings();toast('Dispositivo scollegato da GitHub. I dati restano anche in questo browser.')};
   const r=s.querySelector('#rst');r.onclick=()=>{if(r.dataset.ok){const old=DB;DB=JSON.parse(document.getElementById('seed').textContent);migrate();DB.target=old.target;modalOnClose=null;closeModal();commit();toast('Dati ripristinati',()=>{DB=old;commit()})}else{r.dataset.ok=1;r.textContent='Conferma ripristino'}};
 }
