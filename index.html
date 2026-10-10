@@ -219,7 +219,7 @@ tr.sel td{background:var(--accent-soft)}
 @media (max-width:720px){main{padding-top:18px}.phead{margin-top:4px}.hh-v{font-size:clamp(26px,8.5vw,36px)}}
 /* v6 */
 main{padding-bottom:40px}
-.endsp{height:calc(150px + env(safe-area-inset-bottom))}
+.endsp{height:calc(240px + env(safe-area-inset-bottom))}
 @media (min-width:721px){.endsp{height:60px}}
 .sech{display:flex;align-items:center;gap:10px;margin:22px 0 12px;font-weight:600;color:var(--muted);font-size:13px}
 .sech::after{content:'';flex:1;height:1px;background:var(--line)}
@@ -1144,10 +1144,16 @@ function openSettings(){
   const r=s.querySelector('#rst');r.onclick=()=>{if(r.dataset.ok){const old=DB;DB=JSON.parse(document.getElementById('seed').textContent);migrate();DB.target=old.target;modalOnClose=null;closeModal();commit();toast('Dati ripristinati',()=>{DB=old;commit()})}else{r.dataset.ok=1;r.textContent='Conferma ripristino'}};
 }
 
+/* ---------- auto-update: reload when a newer version is published (iPhone home-screen apps cache the page) ---------- */
+const APPV='20261010195246';
+async function checkUpdate(){if(location.protocol==='file:'||APPV.startsWith('/*'))return;
+  try{const r=await fetch('version.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();
+    if(j.v&&j.v!==APPV){const k='mpf.upd';let n=0;try{n=+(sessionStorage.getItem(k+j.v)||0)}catch(e){}if(n>=2)return;try{sessionStorage.setItem(k+j.v,n+1)}catch(e){}location.replace(location.pathname+'?v='+j.v)}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkUpdate()});
 /* ---------- boot ---------- */
 let rzT,rzW=innerWidth;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(Math.abs(innerWidth-rzW)>40&&!document.querySelector('.scrim')){rzW=innerWidth;render()}},200)});
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(!UI.theme){applyTheme();render()}});
-load();if(isMob())UI.tab='home';applyTheme();compute();render();fsChip();if(GH.cfg)ghSync(true);else fsInit();
+checkUpdate();load();if(isMob())UI.tab='home';applyTheme();compute();render();fsChip();if(GH.cfg)ghSync(true);else fsInit();
 </script>
 </body>
 </html>
