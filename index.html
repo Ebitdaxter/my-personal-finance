@@ -436,7 +436,7 @@ async function ghPush(){if(!GH.cfg)return;if(GH.busy){GH.again=true;return}GH.bu
       if(r.status===409||r.status===422){const remote=await ghPull();if(remote){const ln=(DB.savedAt||'')>(remote.savedAt||'');DB=mergeDB(ln?DB:remote,ln?remote:DB);migrate();localSave();compute();render()}continue}
       throw new Error(ghErr(r.status))}
     throw new Error('conflitto non risolto')}
-  catch(e){GH.err=e.message;setGH('error')}
+  catch(e){GH.err=e.message;setGH('error');toast('Salvataggio su GitHub non riuscito: '+e.message)}
   finally{GH.busy=false;if(GH.again){GH.again=false;ghQueue()}}}
 async function ghSync(silent){if(!GH.cfg||GH.busy)return;GH.busy=true;setGH('sync');let needPush=false;
   try{const remote=await ghPull();
