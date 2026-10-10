@@ -659,9 +659,12 @@ function vSummary(m){
 }
 
 /* ---------- Onboarding (public build, no data yet on this device) ---------- */
-function vOnboard(){afterFns.push(()=>{bindGhForm($('#main'));const f=$('#obImp');if(f)f.onchange=e=>{const x=e.target.files[0];if(!x)return;x.text().then(t=>{const d=JSON.parse(t);if(!Array.isArray(d.txns))throw 0;DB=d;migrate();persist();compute();render();toast(`Importati ${d.txns.length} movimenti`)}).catch(()=>toast('File non valido'))}});
+function vOnboard(){afterFns.push(()=>{bindGhForm($('#main'));const rt=$('#obRetry');if(rt)rt.onclick=async()=>{await ghSync(false);render();if(DB.empty)toast('Ancora nessun dato nel repository')};const rs=$('#obReset');if(rs)rs.onclick=()=>{GH.cfg=null;ghSaveCfg();setGH('off');render()};const f=$('#obImp');if(f)f.onchange=e=>{const x=e.target.files[0];if(!x)return;x.text().then(t=>{const d=JSON.parse(t);if(!Array.isArray(d.txns))throw 0;DB=d;migrate();persist();compute();render();toast(`Importati ${d.txns.length} movimenti`)}).catch(()=>toast('File non valido'))}});
   return `<div class="card onb"><div class="lbl"><i class="ph-fill ph-piggy-bank"></i>My Personal Finance</div><h2 style="margin-top:8px">Collega i tuoi dati</h2>
-  <div class="sub">I dati vivono nel tuo repository GitHub privato. Inserisci utente, repository e token: questo dispositivo si sincronizzerà con gli altri.</div>${ghForm()}
+  ${GH.cfg?`<div class="sub" style="margin-top:6px">Collegato a <b>${esc(GH.cfg.owner)}/${esc(GH.cfg.repo)}</b>${GH.state==='error'?`, ma c'è un errore: <span class="down">${esc(GH.err)}</span>`:', ma il repository non contiene ancora dati.'}</div>
+  <div class="sub" style="margin-top:10px">Apri l'app sul PC, vai in ⚙️ → Sincronizzazione GitHub e collega lo stesso token: i dati verranno caricati e qui compariranno da soli (o tocca il pulsante).</div>
+  <div class="set-row"><button class="btn primary" id="obRetry"><i class="ph ph-arrows-clockwise"></i>Controlla di nuovo</button><button class="btn ghost" id="obReset">Cambia token</button></div>`
+  :`<div class="sub">I dati vivono nel tuo repository GitHub privato. Inserisci utente, repository e token: questo dispositivo si sincronizzerà con gli altri.</div>${ghForm()}`}
   <div class="sub" style="margin-top:16px">Oppure <label style="color:var(--accent);cursor:pointer;font-weight:600">importa un backup JSON<input type="file" accept=".json" id="obImp" hidden></label>.</div></div>`}
 
 /* ---------- Home (iPhone): summary first ---------- */
